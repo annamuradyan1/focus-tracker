@@ -65,6 +65,8 @@ labels:
   app.slack.com: Slack
   linkedin.com: LinkedIn
   youtube.com: YouTube
+  instagram.com: Instagram
+  reddit.com: Reddit
   notion.so: Notion
   claude.ai: Claude
   chatgpt.com: ChatGPT
@@ -80,6 +82,8 @@ companies:
   - Northwind Labs
   - name: Bluefin Analytics
     aliases: [bluefin.io]
+  - Lumenfold
+  - Tidewell Health
 
 # Rules are checked top to bottom; the first match wins. A rule matches when
 # ALL the fields it lists match. Each field takes a string or a list (any of):
