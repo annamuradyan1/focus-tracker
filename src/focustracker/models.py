@@ -51,6 +51,7 @@ class ClassifiedEvent:
     label: str  # human-friendly app/site name, e.g. "Gmail", "Telegram"
     is_comms: bool
     source: str
+    confidence: float = 1.0
 
     @property
     def start(self) -> datetime:

@@ -69,3 +69,13 @@ def test_unmatched_is_unknown_in_rules_only_mode(classifier):
 def test_incognito_is_private(classifier):
     ev = classifier.classify([event(title="secret", url="https://example.com", incognito=True)])[0]
     assert (ev.thread, ev.source) == ("Private browsing", "private")
+
+
+def test_env_template_matches_repo_copy():
+    from pathlib import Path
+
+    import focustracker
+
+    packaged = Path(focustracker.__file__).parent / "defaults" / "env.example"
+    repo = Path(__file__).parent.parent / ".env.example"
+    assert packaged.read_text() == repo.read_text()

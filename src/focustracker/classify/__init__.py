@@ -98,6 +98,7 @@ class Classifier:
                 label=self.label(ev),
                 is_comms=self.is_comms(ev),
                 source=c.source,
+                confidence=c.confidence,
             )
             for ev, c in self.classify_all(events)
         ]

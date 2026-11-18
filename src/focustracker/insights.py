@@ -53,6 +53,7 @@ def daily_insights(m: DayMetrics) -> list[str]:
             f"You switched tasks {m.switches_per_hour:.1f} times per active hour "
             f"({total} switches in {m.active_hours:.1f} h). {work_work} were work → work; "
             f"{to_drift} went to drift."
+            + (f" {kinds['other']} involved unclassified time." if kinds.get("other") else "")
         )
 
     if block := m.longest_block:
