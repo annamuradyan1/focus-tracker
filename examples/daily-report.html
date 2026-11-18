@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus report · Tue 10 Nov 2026</title>
+<style>:root {
+  color-scheme: light;
+  --surface: #fcfcfb;
+  --card: #ffffff;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --track: #f0efec;
+  /* Thread groups, in the palette's fixed categorical order. */
+  --g-job_search: #2a78d6;
+  --g-drift: #eb6834;
+  --g-learning: #1baf7a;
+  --g-comms: #eda100;
+  --g-side_project: #e87ba4;
+  --g-admin: #008300;
+  --g-unknown: #b5b3ab;
+  /* Switch kinds / single-series charts. */
+  --k1: #2a78d6;
+  --k2: #eb6834;
+  --k3: #1baf7a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface: #1a1a19; --card: #222221; --text: #f0efec; --text-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --baseline: #383835; --track: #2c2c2a;
+    --g-job_search: #3987e5; --g-drift: #d95926; --g-learning: #199e70; --g-comms: #c98500;
+    --g-side_project: #d55181; --g-admin: #008300; --g-unknown: #5c5b56;
+    --k1: #3987e5; --k2: #d95926; --k3: #199e70;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #1a1a19; --card: #222221; --text: #f0efec; --text-2: #c3c2b7;
+  --muted: #898781; --grid: #2c2c2a; --baseline: #383835; --track: #2c2c2a;
+  --g-job_search: #3987e5; --g-drift: #d95926; --g-learning: #199e70; --g-comms: #c98500;
+  --g-side_project: #d55181; --g-admin: #008300; --g-unknown: #5c5b56;
+  --k1: #3987e5; --k2: #d95926; --k3: #199e70;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+main { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+header h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+header p { margin: 2px 0 0; color: var(--text-2); }
+.sample { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 99px;
+  background: var(--track); color: var(--text-2); font-size: 12px; }
+h2 { font-size: 16px; margin: 0 0 4px; }
+.sub { color: var(--text-2); font-size: 13px; margin: 0 0 12px; }
+section { background: var(--card); border: 1px solid var(--grid); border-radius: 14px;
+  padding: 16px; margin-top: 14px; }
+.summary ul { margin: 0; padding-left: 18px; }
+.summary li { margin: 6px 0; }
+.num { font-variant-numeric: tabular-nums; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;
+  margin-top: 14px; }
+.tile { background: var(--card); border: 1px solid var(--grid); border-radius: 12px; padding: 12px; }
+.tile b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.tile span { color: var(--text-2); font-size: 13px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 10px; font-size: 13px;
+  color: var(--text-2); }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+
+.g-job_search { background: var(--g-job_search); fill: var(--g-job_search); }
+.g-drift { background: var(--g-drift); fill: var(--g-drift); }
+.g-learning { background: var(--g-learning); fill: var(--g-learning); }
+.g-comms { background: var(--g-comms); fill: var(--g-comms); }
+.g-side_project { background: var(--g-side_project); fill: var(--g-side_project); }
+.g-admin { background: var(--g-admin); fill: var(--g-admin); }
+.g-unknown { background: var(--g-unknown); fill: var(--g-unknown); }
+.k1 { background: var(--k1); fill: var(--k1); }
+.k2 { background: var(--k2); fill: var(--k2); }
+.k3 { background: var(--k3); fill: var(--k3); }
+
+/* Day timeline: one row per hour. */
+.tl-row { display: grid; grid-template-columns: 34px 1fr; align-items: center; height: 26px; }
+.tl-row > span { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.tl-track { position: relative; height: 14px; background: var(--track); border-radius: 4px; }
+.tl-seg { position: absolute; top: 0; bottom: 0; border-right: 1px solid var(--card); min-width: 1px; }
+.tl-tick { position: absolute; top: -5px; width: 2px; height: 4px; margin-left: -1px;
+  background: var(--text); border-radius: 1px; }
+.tl-axis { display: grid; grid-template-columns: 34px 1fr; color: var(--muted); font-size: 11px; }
+.tl-axis div { display: flex; justify-content: space-between; }
+
+/* Column charts (SVG). */
+svg.cols { width: 100%; height: auto; display: block; overflow: visible; }
+svg .grid { stroke: var(--grid); stroke-width: 1; }
+svg .baseline { stroke: var(--baseline); stroke-width: 1; }
+svg .axis { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+/* Horizontal bars (HTML). */
+.bars { display: grid; gap: 8px; }
+.bar-label { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+.bar-label span:last-child { color: var(--text-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bar-track { height: 8px; background: var(--track); border-radius: 4px; margin-top: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 0 4px 4px 0; }
+
+/* Focus blocks list. */
+.blocks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.blocks .meta { color: var(--text-2); font-size: 13px; }
+.blocks .bar-track { height: 6px; }
+
+.cols-2 { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cols-2 { grid-template-columns: 1fr 1fr; } }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--text-2); font-weight: 600; }
+.scroll { overflow-x: auto; }
+ol.pairs { margin: 0; padding-left: 20px; font-size: 14px; }
+ol.pairs li { margin: 4px 0; }
+footer { color: var(--muted); font-size: 12px; margin-top: 18px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Focus report</h1>
+  <p>Tuesday, 10 November 2026 · 8.3 h active</p>
+<span class="sample">Synthetic sample data</span></header>
+
+<section class="summary">
+  <h2>Summary</h2>
+  <ul>
+<li>You switched tasks 7.1 times per active hour (59 switches in 8.3 h). 45 were work → work; 6 went to drift. 2 involved unclassified time.</li><li>Longest focus block: 54 min on Side project: party game, 10 micro-interruptions (Telegram 7, Gmail 2, Instagram 1), 10:05–11:00.</li><li>Longest stretch with zero interruptions: 19 min on Job search: job boards, 13:50–14:09.</li><li>41 micro-interruptions (4.9/hour, 10 min in total). Telegram pulled you away 26 times.</li><li>When you left a task, you came back within 30 min 42% of the time. Left and not resumed: Side project: party game, Job search: Northwind Labs, Job search: CV &amp; cover letters and 4 more.</li>  </ul>
+</section>
+
+<div class="tiles">
+  <div class="tile"><b>7.1</b><span>task switches / hour</span></div>
+  <div class="tile"><b>4.9</b><span>micro-interruptions / hour</span></div>
+  <div class="tile"><b>7 min</b><span>median focus block</span></div>
+  <div class="tile"><b>3</b><span>blocks over 25 min</span></div>
+  <div class="tile"><b>19 min</b><span>longest clean focus</span></div>
+  <div class="tile"><b>42%</b><span>returned within 30 min</span></div>
+</div>
+
+<section>
+  <h2>Your day</h2>
+  <p class="sub">Each row is one hour. Colour shows the kind of thread; black ticks mark micro-interruptions.</p>
+  <div class="legend"><span class="key"><i class="sw g-job_search"></i>Job search</span><span class="key"><i class="sw g-drift"></i>Drift</span><span class="key"><i class="sw g-learning"></i>Learning</span><span class="key"><i class="sw g-comms"></i>Comms</span><span class="key"><i class="sw g-side_project"></i>Side project</span><span class="key"><i class="sw g-unknown"></i>Unknown</span></div>
+  <div class="tl-row">
+    <span>09</span>
+    <div class="tl-track">
+<i class="tl-seg g-job_search" style="left:29.76%;width:3.59%" title="09:17–09:20 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:33.35%;width:0.24%" title="09:20–09:20 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:33.59%;width:9.73%" title="09:20–09:25 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:43.32%;width:0.65%" title="09:25–09:26 · Comms (Slack)"></i><i class="tl-seg g-job_search" style="left:43.97%;width:5.30%" title="09:26–09:29 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-drift" style="left:49.27%;width:0.30%" title="09:29–09:29 · Drift: social (Instagram)"></i><i class="tl-seg g-job_search" style="left:49.56%;width:13.30%" title="09:29–09:37 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-side_project" style="left:62.87%;width:28.86%" title="09:37–09:55 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:91.73%;width:0.65%" title="09:55–09:55 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:92.37%;width:1.44%" title="09:55–09:56 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:93.82%;width:0.36%" title="09:56–09:56 · Comms (Slack)"></i><i class="tl-seg g-side_project" style="left:94.17%;width:5.83%" title="09:56–10:00 · Side project: party game (VS Code)"></i><i class="tl-tick" style="left:33.35%" title="09:20 · Telegram, 8s"></i><i class="tl-tick" style="left:43.32%" title="09:25 · Slack, 23s"></i><i class="tl-tick" style="left:49.27%" title="09:29 · Instagram, 11s"></i><i class="tl-tick" style="left:91.73%" title="09:55 · Telegram, 23s"></i><i class="tl-tick" style="left:93.82%" title="09:56 · Slack, 13s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>10</span>
+    <div class="tl-track">
+<i class="tl-seg g-side_project" style="left:0.00%;width:0.91%" title="09:56–10:00 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:0.91%;width:0.48%" title="10:00–10:00 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:1.39%;width:3.68%" title="10:00–10:03 · Side project: party game (GitHub)"></i><i class="tl-seg g-drift" style="left:5.07%;width:4.33%" title="10:03–10:05 · Drift: social (Reddit)"></i><i class="tl-seg g-side_project" style="left:9.40%;width:11.35%" title="10:05–10:12 · Side project: party game (GitHub)"></i><i class="tl-seg g-comms" style="left:20.75%;width:0.55%" title="10:12–10:12 · Comms (Gmail)"></i><i class="tl-seg g-side_project" style="left:21.30%;width:13.08%" title="10:12–10:20 · Side project: party game (VS Code)"></i><i class="tl-seg g-drift" style="left:34.38%;width:0.50%" title="10:20–10:20 · Drift: social (Instagram)"></i><i class="tl-seg g-side_project" style="left:34.87%;width:1.46%" title="10:20–10:21 · Side project: party game (Figma)"></i><i class="tl-seg g-comms" style="left:36.34%;width:0.12%" title="10:21–10:21 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:36.46%;width:8.05%" title="10:21–10:26 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:44.51%;width:0.29%" title="10:26–10:26 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:44.80%;width:6.44%" title="10:26–10:30 · Side project: party game (iTerm2)"></i><i class="tl-seg g-comms" style="left:51.24%;width:0.64%" title="10:30–10:31 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:51.87%;width:1.24%" title="10:31–10:31 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:53.11%;width:0.56%" title="10:31–10:32 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:53.68%;width:8.63%" title="10:32–10:37 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:62.31%;width:0.26%" title="10:37–10:37 · Comms (Gmail)"></i><i class="tl-seg g-side_project" style="left:62.57%;width:26.16%" title="10:37–10:53 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:88.74%;width:0.32%" title="10:53–10:53 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:89.06%;width:7.31%" title="10:53–10:57 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:96.36%;width:0.23%" title="10:57–10:57 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:96.59%;width:2.56%" title="10:57–10:59 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:99.16%;width:0.57%" title="10:59–10:59 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:99.72%;width:0.28%" title="10:59–11:00 · Side project: party game (VS Code)"></i><i class="tl-tick" style="left:0.91%" title="10:00 · Telegram, 17s"></i><i class="tl-tick" style="left:20.75%" title="10:12 · Gmail, 20s"></i><i class="tl-tick" style="left:34.38%" title="10:20 · Instagram, 18s"></i><i class="tl-tick" style="left:36.34%" title="10:21 · Telegram, 4s"></i><i class="tl-tick" style="left:44.51%" title="10:26 · Telegram, 10s"></i><i class="tl-tick" style="left:51.24%" title="10:30 · Telegram, 23s"></i><i class="tl-tick" style="left:53.11%" title="10:31 · Telegram, 20s"></i><i class="tl-tick" style="left:62.31%" title="10:37 · Gmail, 9s"></i><i class="tl-tick" style="left:88.74%" title="10:53 · Telegram, 12s"></i><i class="tl-tick" style="left:96.36%" title="10:57 · Telegram, 8s"></i><i class="tl-tick" style="left:99.16%" title="10:59 · Telegram, 20s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>11</span>
+    <div class="tl-track">
+<i class="tl-seg g-side_project" style="left:0.00%;width:0.19%" title="10:59–11:00 · Side project: party game (VS Code)"></i><i class="tl-seg g-comms" style="left:0.19%;width:3.95%" title="11:00–11:02 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:4.14%;width:25.81%" title="11:02–11:17 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:29.95%;width:0.39%" title="11:17–11:18 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:30.33%;width:3.57%" title="11:18–11:20 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:33.90%;width:5.41%" title="11:20–11:23 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:39.31%;width:10.98%" title="11:23–11:30 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:50.29%;width:0.40%" title="11:30–11:30 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:50.68%;width:25.61%" title="11:30–11:45 · Learning: courses (coursera.org)"></i><i class="tl-seg g-learning" style="left:76.29%;width:12.61%" title="11:45–11:53 · Learning: articles (medium.com)"></i><i class="tl-seg g-learning" style="left:88.89%;width:6.91%" title="11:53–11:57 · Learning: AI tools (Claude)"></i><i class="tl-seg g-comms" style="left:95.80%;width:0.35%" title="11:57–11:57 · Comms (Slack)"></i><i class="tl-seg g-learning" style="left:96.15%;width:3.85%" title="11:57–12:00 · Learning: AI tools (Claude)"></i><i class="tl-tick" style="left:29.95%" title="11:17 · Gmail, 14s"></i><i class="tl-tick" style="left:50.29%" title="11:30 · Gmail, 14s"></i><i class="tl-tick" style="left:95.80%" title="11:57 · Slack, 12s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>12</span>
+    <div class="tl-track">
+<i class="tl-seg g-learning" style="left:0.00%;width:0.22%" title="11:57–12:00 · Learning: AI tools (Claude)"></i><i class="tl-seg g-learning" style="left:0.22%;width:16.03%" title="12:00–12:09 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:16.25%;width:0.38%" title="12:09–12:09 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:16.63%;width:6.39%" title="12:09–12:13 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:23.02%;width:5.16%" title="12:13–12:16 · Comms (Slack)"></i><i class="tl-seg g-learning" style="left:28.18%;width:11.49%" title="12:16–12:23 · Learning: courses (coursera.org)"></i><i class="tl-seg g-unknown" style="left:39.68%;width:1.99%" title="12:23–12:25 · Unknown (newtab)"></i><i class="tl-seg g-job_search" style="left:41.67%;width:29.76%" title="12:25–12:42 · Job search: CV &amp; cover letters (Claude)"></i><i class="tl-tick" style="left:16.25%" title="12:09 · Telegram, 14s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>13</span>
+    <div class="tl-track">
+<i class="tl-seg g-job_search" style="left:83.75%;width:16.25%" title="13:50–14:09 · Job search: job boards (LinkedIn)"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>14</span>
+    <div class="tl-track">
+<i class="tl-seg g-job_search" style="left:0.00%;width:15.98%" title="13:50–14:09 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:15.98%;width:0.72%" title="14:09–14:10 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:16.70%;width:2.27%" title="14:10–14:11 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-drift" style="left:18.96%;width:10.63%" title="14:11–14:17 · Drift: video (YouTube)"></i><i class="tl-seg g-job_search" style="left:29.60%;width:15.92%" title="14:17–14:27 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:45.52%;width:0.39%" title="14:27–14:27 · Comms (Gmail)"></i><i class="tl-seg g-job_search" style="left:45.91%;width:7.54%" title="14:27–14:32 · Job search: job boards (wellfound.com)"></i><i class="tl-seg g-comms" style="left:53.44%;width:0.69%" title="14:32–14:32 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:54.13%;width:1.99%" title="14:32–14:33 · Job search: job boards (wellfound.com)"></i><i class="tl-seg g-comms" style="left:56.12%;width:0.41%" title="14:33–14:33 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:56.52%;width:0.90%" title="14:33–14:34 · Job search: job boards (wellfound.com)"></i><i class="tl-seg g-comms" style="left:57.43%;width:3.73%" title="14:34–14:36 · Comms (Gmail)"></i><i class="tl-seg g-side_project" style="left:61.16%;width:2.70%" title="14:36–14:38 · Side project: party game (VS Code)"></i><i class="tl-seg g-drift" style="left:63.86%;width:2.42%" title="14:38–14:39 · Drift: social (Reddit)"></i><i class="tl-seg g-learning" style="left:66.28%;width:6.11%" title="14:39–14:43 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:72.39%;width:0.67%" title="14:43–14:43 · Comms (Gmail)"></i><i class="tl-seg g-job_search" style="left:73.06%;width:14.23%" title="14:43–14:52 · Job search: CV &amp; cover letters (Google Docs)"></i><i class="tl-seg g-comms" style="left:87.29%;width:0.13%" title="14:52–14:52 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:87.42%;width:9.56%" title="14:52–14:58 · Job search: CV &amp; cover letters (Google Docs)"></i><i class="tl-seg g-comms" style="left:96.98%;width:0.16%" title="14:58–14:58 · Comms (Slack)"></i><i class="tl-seg g-drift" style="left:97.14%;width:1.67%" title="14:58–14:59 · Drift: social (Instagram)"></i><i class="tl-seg g-learning" style="left:98.81%;width:1.19%" title="14:59–15:01 · Learning: courses (coursera.org)"></i><i class="tl-tick" style="left:15.98%" title="14:09 · Telegram, 26s"></i><i class="tl-tick" style="left:45.52%" title="14:27 · Gmail, 14s"></i><i class="tl-tick" style="left:53.44%" title="14:32 · Telegram, 25s"></i><i class="tl-tick" style="left:56.12%" title="14:33 · Telegram, 15s"></i><i class="tl-tick" style="left:87.29%" title="14:52 · Telegram, 5s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>15</span>
+    <div class="tl-track">
+<i class="tl-seg g-learning" style="left:0.00%;width:2.54%" title="14:59–15:01 · Learning: courses (coursera.org)"></i><i class="tl-seg g-learning" style="left:2.54%;width:10.57%" title="15:01–15:07 · Learning: AI tools (Claude)"></i><i class="tl-seg g-learning" style="left:13.11%;width:4.48%" title="15:07–15:10 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:17.59%;width:0.50%" title="15:10–15:10 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:18.09%;width:4.16%" title="15:10–15:13 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:22.24%;width:0.26%" title="15:13–15:13 · Comms (WhatsApp)"></i><i class="tl-seg g-learning" style="left:22.51%;width:13.48%" title="15:13–15:21 · Learning: AI tools (Claude)"></i><i class="tl-seg g-comms" style="left:35.98%;width:3.84%" title="15:21–15:23 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:39.82%;width:2.69%" title="15:23–15:25 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:42.51%;width:0.12%" title="15:25–15:25 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:42.62%;width:16.47%" title="15:25–15:35 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:59.09%;width:0.53%" title="15:35–15:35 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:59.62%;width:8.91%" title="15:35–15:41 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:68.54%;width:0.22%" title="15:41–15:41 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:68.76%;width:3.62%" title="15:41–15:43 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:72.38%;width:0.55%" title="15:43–15:43 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:72.93%;width:3.13%" title="15:43–15:45 · Learning: articles (medium.com)"></i><i class="tl-seg g-learning" style="left:76.06%;width:0.75%" title="15:45–15:46 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:76.81%;width:0.36%" title="15:46–15:46 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:77.17%;width:2.28%" title="15:46–15:47 · Learning: courses (coursera.org)"></i><i class="tl-seg g-learning" style="left:79.45%;width:0.66%" title="15:47–15:48 · Learning: articles (medium.com)"></i><i class="tl-seg g-learning" style="left:80.11%;width:3.89%" title="15:48–15:50 · Learning: courses (coursera.org)"></i><i class="tl-seg g-learning" style="left:84.00%;width:13.99%" title="15:50–15:58 · Learning: articles (medium.com)"></i><i class="tl-seg g-comms" style="left:97.99%;width:0.27%" title="15:58–15:58 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:98.25%;width:1.75%" title="15:58–16:04 · Learning: articles (medium.com)"></i><i class="tl-tick" style="left:17.59%" title="15:10 · Telegram, 18s"></i><i class="tl-tick" style="left:42.51%" title="15:25 · Telegram, 4s"></i><i class="tl-tick" style="left:59.09%" title="15:35 · Telegram, 19s"></i><i class="tl-tick" style="left:68.54%" title="15:41 · Telegram, 8s"></i><i class="tl-tick" style="left:76.81%" title="15:46 · Telegram, 13s"></i><i class="tl-tick" style="left:79.45%" title="15:47 · medium.com, 24s"></i><i class="tl-tick" style="left:97.99%" title="15:58 · Telegram, 10s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>16</span>
+    <div class="tl-track">
+<i class="tl-seg g-learning" style="left:0.00%;width:8.12%" title="15:58–16:04 · Learning: articles (medium.com)"></i><i class="tl-seg g-learning" style="left:8.12%;width:4.48%" title="16:04–16:07 · Learning: AI tools (Claude)"></i><i class="tl-seg g-learning" style="left:12.60%;width:17.48%" title="16:07–16:18 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:30.08%;width:0.56%" title="16:18–16:18 · Comms (Telegram)"></i><i class="tl-seg g-learning" style="left:30.63%;width:2.93%" title="16:18–16:20 · Learning: courses (coursera.org)"></i><i class="tl-seg g-comms" style="left:33.57%;width:0.18%" title="16:20–16:20 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:51.52%;width:6.81%" title="16:30–16:34 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:58.33%;width:0.24%" title="16:34–16:35 · Comms (Slack)"></i><i class="tl-seg g-job_search" style="left:58.57%;width:9.28%" title="16:35–16:40 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:67.85%;width:0.30%" title="16:40–16:40 · Comms (Telegram)"></i><i class="tl-seg g-side_project" style="left:68.14%;width:26.34%" title="16:40–16:56 · Side project: party game (iTerm2)"></i><i class="tl-seg g-comms" style="left:94.48%;width:5.11%" title="16:56–16:59 · Comms (Gmail)"></i><i class="tl-seg g-job_search" style="left:99.59%;width:0.41%" title="16:59–17:06 · Job search: Northwind Labs (boards.greenhouse.io)"></i><i class="tl-tick" style="left:30.08%" title="16:18 · Telegram, 20s"></i><i class="tl-tick" style="left:58.33%" title="16:34 · Slack, 8s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>17</span>
+    <div class="tl-track">
+<i class="tl-seg g-job_search" style="left:0.00%;width:11.37%" title="16:59–17:06 · Job search: Northwind Labs (boards.greenhouse.io)"></i><i class="tl-seg g-drift" style="left:11.37%;width:5.57%" title="17:06–17:10 · Drift: social (Reddit)"></i><i class="tl-seg g-job_search" style="left:16.94%;width:1.98%" title="17:10–17:11 · Job search: Northwind Labs (Google Docs)"></i><i class="tl-seg g-comms" style="left:18.92%;width:0.43%" title="17:11–17:11 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:19.35%;width:14.29%" title="17:11–17:20 · Job search: Northwind Labs (Google Docs)"></i><i class="tl-seg g-comms" style="left:33.64%;width:4.74%" title="17:20–17:23 · Comms (Slack)"></i><i class="tl-seg g-job_search" style="left:38.38%;width:13.10%" title="17:23–17:30 · Job search: CV &amp; cover letters (Google Docs)"></i><i class="tl-seg g-job_search" style="left:51.48%;width:2.75%" title="17:30–17:32 · Job search: LinkedIn (LinkedIn)"></i><i class="tl-seg g-learning" style="left:54.23%;width:3.25%" title="17:32–17:34 · Learning: courses (coursera.org)"></i><i class="tl-seg g-learning" style="left:57.48%;width:5.86%" title="17:34–17:38 · Learning: AI tools (Claude)"></i><i class="tl-seg g-drift" style="left:63.34%;width:3.66%" title="17:38–17:40 · Drift: social (Instagram)"></i><i class="tl-seg g-learning" style="left:67.00%;width:7.86%" title="17:40–17:44 · Learning: courses (coursera.org)"></i><i class="tl-seg g-learning" style="left:74.85%;width:0.74%" title="17:44–17:45 · Learning: articles (medium.com)"></i><i class="tl-seg g-comms" style="left:75.60%;width:0.22%" title="17:45–17:45 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:75.82%;width:17.85%" title="17:45–17:56 · Learning: courses (coursera.org)"></i><i class="tl-seg g-learning" style="left:93.67%;width:6.33%" title="17:56–18:07 · Learning: AI tools (Claude)"></i><i class="tl-tick" style="left:18.92%" title="17:11 · Telegram, 15s"></i>    </div>
+  </div>
+  <div class="tl-row">
+    <span>18</span>
+    <div class="tl-track">
+<i class="tl-seg g-learning" style="left:0.00%;width:12.13%" title="17:56–18:07 · Learning: AI tools (Claude)"></i><i class="tl-seg g-comms" style="left:12.13%;width:0.48%" title="18:07–18:07 · Comms (Gmail)"></i><i class="tl-seg g-learning" style="left:12.61%;width:6.46%" title="18:07–18:11 · Learning: AI tools (Claude)"></i><i class="tl-seg g-job_search" style="left:19.07%;width:1.28%" title="18:11–18:12 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:20.35%;width:0.63%" title="18:12–18:12 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:20.99%;width:9.66%" title="18:12–18:18 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:30.64%;width:0.22%" title="18:18–18:18 · Comms (Gmail)"></i><i class="tl-seg g-job_search" style="left:30.87%;width:29.25%" title="18:18–18:36 · Job search: job boards (wellfound.com)"></i><i class="tl-seg g-comms" style="left:60.11%;width:0.53%" title="18:36–18:36 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:60.64%;width:2.57%" title="18:36–18:37 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:63.21%;width:0.55%" title="18:37–18:38 · Comms (Telegram)"></i><i class="tl-seg g-job_search" style="left:63.76%;width:6.41%" title="18:38–18:42 · Job search: job boards (LinkedIn)"></i><i class="tl-seg g-comms" style="left:70.17%;width:0.60%" title="18:42–18:42 · Comms (Slack)"></i><i class="tl-seg g-job_search" style="left:70.77%;width:12.04%" title="18:42–18:49 · Job search: job boards (wellfound.com)"></i><i class="tl-seg g-job_search" style="left:82.81%;width:9.83%" title="18:49–18:55 · Job search: LinkedIn (LinkedIn)"></i><i class="tl-tick" style="left:12.13%" title="18:07 · Gmail, 17s"></i><i class="tl-tick" style="left:20.35%" title="18:12 · Telegram, 23s"></i><i class="tl-tick" style="left:30.64%" title="18:18 · Gmail, 8s"></i><i class="tl-tick" style="left:60.11%" title="18:36 · Telegram, 19s"></i><i class="tl-tick" style="left:63.21%" title="18:37 · Telegram, 20s"></i><i class="tl-tick" style="left:70.17%" title="18:42 · Slack, 22s"></i>    </div>
+  </div>
+  <div class="tl-axis"><span></span><div><span>:00</span><span>:15</span><span>:30</span><span>:45</span><span>:60</span></div></div>
+</section>
+
+<section>
+  <h2>Task switches by hour</h2>
+  <p class="sub">59 switches: 45 work → work, 6 work → drift, 6 drift → work.</p>
+  <div class="legend"><span class="key"><i class="sw k1"></i>work → work</span><span class="key"><i class="sw k2"></i>work → drift</span><span class="key"><i class="sw k3"></i>drift → work</span></div>
+  <svg viewBox="0 0 420 150" role="img" class="cols" aria-label="work → work, work → drift, drift → work by category"><line class="grid" x1="26" x2="420" y1="130.0" y2="130.0"/><text class="axis" x="21" y="133.5" text-anchor="end">0</text><line class="grid" x1="26" x2="420" y1="92.0" y2="92.0"/><text class="axis" x="21" y="95.5" text-anchor="end">5</text><line class="grid" x1="26" x2="420" y1="54.0" y2="54.0"/><text class="axis" x="21" y="57.5" text-anchor="end">10</text><line class="grid" x1="26" x2="420" y1="16.0" y2="16.0"/><text class="axis" x="21" y="19.5" text-anchor="end">15</text><path class="k1" d="M33.5,130.0V125.4Q33.5,122.4 36.5,122.4H54.9Q57.9,122.4 57.9,125.4V130.0Z"><title>9: work → work 1</title></path><text class="axis" x="45.7" y="144" text-anchor="middle">9</text><path class="k2" d="M72.9,130.0V122.4Q72.9,122.4 72.9,122.4H97.3Q97.3,122.4 97.3,122.4V130.0Z"><title>10: work → drift 1</title></path><path class="k3" d="M72.9,121.4V117.8Q72.9,114.8 75.9,114.8H94.3Q97.3,114.8 97.3,117.8V121.4Z"><title>10: drift → work 1</title></path><text class="axis" x="85.1" y="144" text-anchor="middle">10</text><path class="k1" d="M112.3,130.0V87.4Q112.3,84.4 115.3,84.4H133.7Q136.7,84.4 136.7,87.4V130.0Z"><title>11: work → work 6</title></path><text class="axis" x="124.5" y="144" text-anchor="middle">11</text><path class="k1" d="M151.7,130.0V110.2Q151.7,107.2 154.7,107.2H173.1Q176.1,107.2 176.1,110.2V130.0Z"><title>12: work → work 3</title></path><text class="axis" x="163.9" y="144" text-anchor="middle">12</text><path class="k1" d="M191.1,130.0V125.4Q191.1,122.4 194.1,122.4H212.5Q215.5,122.4 215.5,125.4V130.0Z"><title>13: work → work 1</title></path><text class="axis" x="203.3" y="144" text-anchor="middle">13</text><path class="k1" d="M230.5,130.0V92.0Q230.5,92.0 230.5,92.0H254.9Q254.9,92.0 254.9,92.0V130.0Z"><title>14: work → work 5</title></path><path class="k2" d="M230.5,91.0V69.2Q230.5,69.2 230.5,69.2H254.9Q254.9,69.2 254.9,69.2V91.0Z"><title>14: work → drift 3</title></path><path class="k3" d="M230.5,68.2V49.4Q230.5,46.4 233.5,46.4H251.9Q254.9,46.4 254.9,49.4V68.2Z"><title>14: drift → work 3</title></path><text class="axis" x="242.7" y="144" text-anchor="middle">14</text><path class="k1" d="M269.9,130.0V57.0Q269.9,54.0 272.9,54.0H291.3Q294.3,54.0 294.3,57.0V130.0Z"><title>15: work → work 10</title></path><text class="axis" x="282.1" y="144" text-anchor="middle">15</text><path class="k1" d="M309.3,130.0V72.2Q309.3,69.2 312.3,69.2H330.7Q333.7,69.2 333.7,72.2V130.0Z"><title>16: work → work 8</title></path><text class="axis" x="321.5" y="144" text-anchor="middle">16</text><path class="k1" d="M348.7,130.0V61.6Q348.7,61.6 348.7,61.6H373.1Q373.1,61.6 373.1,61.6V130.0Z"><title>17: work → work 9</title></path><path class="k2" d="M348.7,60.6V46.4Q348.7,46.4 348.7,46.4H373.1Q373.1,46.4 373.1,46.4V60.6Z"><title>17: work → drift 2</title></path><path class="k3" d="M348.7,45.4V34.2Q348.7,31.2 351.7,31.2H370.1Q373.1,31.2 373.1,34.2V45.4Z"><title>17: drift → work 2</title></path><text class="axis" x="360.9" y="144" text-anchor="middle">17</text><path class="k1" d="M388.1,130.0V117.8Q388.1,114.8 391.1,114.8H409.5Q412.5,114.8 412.5,117.8V130.0Z"><title>18: work → work 2</title></path><text class="axis" x="400.3" y="144" text-anchor="middle">18</text><line class="baseline" x1="26" x2="420" y1="130.0" y2="130.0"/></svg>
+</section>
+
+<section>
+  <h2>Focus blocks</h2>
+  <p class="sub">45 blocks on work threads. Short detours (under 30s) that came back are counted as micro-interruptions instead of breaking the block.</p>
+  <ol class="blocks">
+    <li>
+      <div class="bar-label"><span><i class="sw g-side_project"></i> 54 min on Side project: party game</span><span>10:05–11:00</span></div>
+      <div class="meta">10 micro-interruptions (Telegram 7, Gmail 2, Instagram 1) · longest clean stretch 16 min</div>
+      <div class="bar-track"><div class="bar-fill g-side_project" style="width:100.0%"></div></div>
+    </li>
+    <li>
+      <div class="bar-label"><span><i class="sw g-job_search"></i> 38 min on Job search: job boards</span><span>18:11–18:49</span></div>
+      <div class="meta">5 micro-interruptions (Telegram 3, Gmail 1, Slack 1) · longest clean stretch 18 min</div>
+      <div class="bar-track"><div class="bar-fill g-job_search" style="width:70.2%"></div></div>
+    </li>
+    <li>
+      <div class="bar-label"><span><i class="sw g-side_project"></i> 25 min on Side project: party game</span><span>09:37–10:03</span></div>
+      <div class="meta">3 micro-interruptions (Telegram 2, Slack 1) · longest clean stretch 17 min</div>
+      <div class="bar-track"><div class="bar-fill g-side_project" style="width:46.5%"></div></div>
+    </li>
+    <li>
+      <div class="bar-label"><span><i class="sw g-learning"></i> 22 min on Learning: courses</span><span>11:23–11:45</span></div>
+      <div class="meta">1 micro-interruption (Gmail 1) · longest clean stretch 15 min</div>
+      <div class="bar-track"><div class="bar-fill g-learning" style="width:40.7%"></div></div>
+    </li>
+    <li>
+      <div class="bar-label"><span><i class="sw g-job_search"></i> 21 min on Job search: job boards</span><span>13:50–14:11</span></div>
+      <div class="meta">1 micro-interruption (Telegram 1) · longest clean stretch 19 min</div>
+      <div class="bar-track"><div class="bar-fill g-job_search" style="width:38.8%"></div></div>
+    </li>
+    <li>
+      <div class="bar-label"><span><i class="sw g-job_search"></i> 20 min on Job search: job boards</span><span>09:17–09:37</span></div>
+      <div class="meta">3 micro-interruptions (Telegram 1, Slack 1, Instagram 1) · longest clean stretch 8 min</div>
+      <div class="bar-track"><div class="bar-fill g-job_search" style="width:36.5%"></div></div>
+    </li>
+    <li>
+      <div class="bar-label"><span><i class="sw g-learning"></i> 20 min on Learning: courses</span><span>15:23–15:43</span></div>
+      <div class="meta">3 micro-interruptions (Telegram 3) · longest clean stretch 10 min</div>
+      <div class="bar-track"><div class="bar-fill g-learning" style="width:35.9%"></div></div>
+    </li>
+    <li>
+      <div class="bar-label"><span><i class="sw g-learning"></i> 18 min on Learning: courses</span><span>11:02–11:20</span></div>
+      <div class="meta">1 micro-interruption (Gmail 1) · longest clean stretch 15 min</div>
+      <div class="bar-track"><div class="bar-fill g-learning" style="width:32.8%"></div></div>
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2>Micro-interruptions</h2>
+  <p class="sub">41 in total, 10 min spent in them, 0.9 per focus block on average.</p>
+  <div class="cols-2">
+    <div>
+      <h3 class="sub">What pulled you away</h3>
+      <div class="bars">
+        <div><div class="bar-label"><span>Telegram</span><span>26</span></div>
+        <div class="bar-track"><div class="bar-fill k1" style="width:100.0%"></div></div></div>
+        <div><div class="bar-label"><span>Gmail</span><span>7</span></div>
+        <div class="bar-track"><div class="bar-fill k1" style="width:26.9%"></div></div></div>
+        <div><div class="bar-label"><span>Slack</span><span>5</span></div>
+        <div class="bar-track"><div class="bar-fill k1" style="width:19.2%"></div></div></div>
+        <div><div class="bar-label"><span>Instagram</span><span>2</span></div>
+        <div class="bar-track"><div class="bar-fill k1" style="width:7.7%"></div></div></div>
+        <div><div class="bar-label"><span>medium.com</span><span>1</span></div>
+        <div class="bar-track"><div class="bar-fill k1" style="width:3.8%"></div></div></div>
+      </div>
+    </div>
+    <div>
+      <h3 class="sub">By hour</h3>
+      <svg viewBox="0 0 420 150" role="img" class="cols" aria-label="micro-interruptions by category"><line class="grid" x1="26" x2="420" y1="130.0" y2="130.0"/><text class="axis" x="21" y="133.5" text-anchor="end">0</text><line class="grid" x1="26" x2="420" y1="92.0" y2="92.0"/><text class="axis" x="21" y="95.5" text-anchor="end">5</text><line class="grid" x1="26" x2="420" y1="54.0" y2="54.0"/><text class="axis" x="21" y="57.5" text-anchor="end">10</text><line class="grid" x1="26" x2="420" y1="16.0" y2="16.0"/><text class="axis" x="21" y="19.5" text-anchor="end">15</text><path class="k1" d="M33.5,130.0V95.0Q33.5,92.0 36.5,92.0H54.9Q57.9,92.0 57.9,95.0V130.0Z"><title>9: micro-interruptions 5</title></path><text class="axis" x="45.7" y="144" text-anchor="middle">9</text><path class="k1" d="M72.9,130.0V49.4Q72.9,46.4 75.9,46.4H94.3Q97.3,46.4 97.3,49.4V130.0Z"><title>10: micro-interruptions 11</title></path><text class="axis" x="85.1" y="144" text-anchor="middle">10</text><path class="k1" d="M112.3,130.0V110.2Q112.3,107.2 115.3,107.2H133.7Q136.7,107.2 136.7,110.2V130.0Z"><title>11: micro-interruptions 3</title></path><text class="axis" x="124.5" y="144" text-anchor="middle">11</text><path class="k1" d="M151.7,130.0V125.4Q151.7,122.4 154.7,122.4H173.1Q176.1,122.4 176.1,125.4V130.0Z"><title>12: micro-interruptions 1</title></path><text class="axis" x="163.9" y="144" text-anchor="middle">12</text><text class="axis" x="203.3" y="144" text-anchor="middle">13</text><path class="k1" d="M230.5,130.0V95.0Q230.5,92.0 233.5,92.0H251.9Q254.9,92.0 254.9,95.0V130.0Z"><title>14: micro-interruptions 5</title></path><text class="axis" x="242.7" y="144" text-anchor="middle">14</text><path class="k1" d="M269.9,130.0V79.8Q269.9,76.8 272.9,76.8H291.3Q294.3,76.8 294.3,79.8V130.0Z"><title>15: micro-interruptions 7</title></path><text class="axis" x="282.1" y="144" text-anchor="middle">15</text><path class="k1" d="M309.3,130.0V117.8Q309.3,114.8 312.3,114.8H330.7Q333.7,114.8 333.7,117.8V130.0Z"><title>16: micro-interruptions 2</title></path><text class="axis" x="321.5" y="144" text-anchor="middle">16</text><path class="k1" d="M348.7,130.0V125.4Q348.7,122.4 351.7,122.4H370.1Q373.1,122.4 373.1,125.4V130.0Z"><title>17: micro-interruptions 1</title></path><text class="axis" x="360.9" y="144" text-anchor="middle">17</text><path class="k1" d="M388.1,130.0V87.4Q388.1,84.4 391.1,84.4H409.5Q412.5,84.4 412.5,87.4V130.0Z"><title>18: micro-interruptions 6</title></path><text class="axis" x="400.3" y="144" text-anchor="middle">18</text><line class="baseline" x1="26" x2="420" y1="130.0" y2="130.0"/></svg>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Where switches go</h2>
+  <div class="cols-2">
+    <div>
+      <h3 class="sub">Most common switches</h3>
+      <ol class="pairs">
+<li>Learning: courses → Comms: <span class="num">6</span>×</li><li>Comms → Learning: courses: <span class="num">5</span>×</li><li>Learning: courses → Learning: articles: <span class="num">3</span>×</li><li>Learning: AI tools → Learning: courses: <span class="num">3</span>×</li><li>Drift: social → Learning: courses: <span class="num">3</span>×</li><li>Learning: courses → Learning: AI tools: <span class="num">3</span>×</li><li>Side project: party game → Drift: social: <span class="num">2</span>×</li><li>Side project: party game → Comms: <span class="num">2</span>×</li>      </ol>
+    </div>
+    <div>
+      <h3 class="sub">Coming back</h3>
+      <p>You left a task 38 times and came back within 30 min 16 times (42%); median time to return 18 min.</p>
+      <p class="sub">Left and not resumed today:</p>
+      <ul><li>Side project: party game (left 16:56, 1 h 34 min total)</li><li>Job search: Northwind Labs (left 17:20, 17 min total)</li><li>Job search: CV &amp; cover letters (left 17:30, 40 min total)</li><li>Learning: articles (left 17:45, 25 min total)</li><li>Learning: courses (left 17:56, 2 h 04 min total)</li><li>Learning: AI tools (left 18:11, 42 min total)</li><li>Job search: job boards (left 18:49, 1 h 42 min total)</li></ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Time per thread</h2>
+  <p class="sub">Comms tied to a task: 0 min · general comms: 30 min</p>
+  <div class="legend"><span class="key"><i class="sw g-job_search"></i>Job search</span><span class="key"><i class="sw g-drift"></i>Drift</span><span class="key"><i class="sw g-learning"></i>Learning</span><span class="key"><i class="sw g-comms"></i>Comms</span><span class="key"><i class="sw g-side_project"></i>Side project</span><span class="key"><i class="sw g-unknown"></i>Unknown</span></div>
+  <div class="bars">
+    <div><div class="bar-label"><span>Learning: courses</span><span>2 h 04 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-learning" style="width:100.0%"></div></div></div>
+    <div><div class="bar-label"><span>Job search: job boards</span><span>1 h 42 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-job_search" style="width:82.4%"></div></div></div>
+    <div><div class="bar-label"><span>Side project: party game</span><span>1 h 34 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-side_project" style="width:75.9%"></div></div></div>
+    <div><div class="bar-label"><span>Learning: AI tools</span><span>42 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-learning" style="width:34.1%"></div></div></div>
+    <div><div class="bar-label"><span>Job search: CV &amp; cover letters</span><span>40 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-job_search" style="width:32.3%"></div></div></div>
+    <div><div class="bar-label"><span>Comms</span><span>30 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-comms" style="width:24.4%"></div></div></div>
+    <div><div class="bar-label"><span>Learning: articles</span><span>25 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-learning" style="width:19.9%"></div></div></div>
+    <div><div class="bar-label"><span>Job search: Northwind Labs</span><span>17 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-job_search" style="width:13.6%"></div></div></div>
+    <div><div class="bar-label"><span>Drift: social</span><span>11 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-drift" style="width:8.9%"></div></div></div>
+    <div><div class="bar-label"><span>Job search: LinkedIn</span><span>8 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-job_search" style="width:6.1%"></div></div></div>
+    <div><div class="bar-label"><span>Drift: video</span><span>6 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-drift" style="width:5.2%"></div></div></div>
+    <div><div class="bar-label"><span>Unknown</span><span>1 min</span></div>
+    <div class="bar-track"><div class="bar-fill g-unknown" style="width:1.0%"></div></div></div>
+  </div>
+</section>
+
+<footer>
+  Generated by focus-tracker. Flicker under 3s ignored; detours up to 30s count as micro-interruptions; focus blocks are work blocks of 1+ min.
+</footer>
+</main>
+</body>
+</html>

@@ -67,11 +67,11 @@ class Runner:
         self.classifier = Classifier(config, use_llm=use_llm)
 
     def raw_for(self, day: date) -> RawData | None:
-        if self.sample:
-            return generate_day(day, local_tz(self.config.settings))
         if self.source:
             path = self.source / f"{day.isoformat()}.json" if self.source.is_dir() else self.source
             return RawData.from_file(path) if path.exists() else RawData()
+        if self.sample:
+            return generate_day(day, local_tz(self.config.settings))
         return None  # live ActivityWatch
 
     def day(self, day: date) -> DayResult:
