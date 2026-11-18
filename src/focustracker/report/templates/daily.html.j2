@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus report · {{ day.strftime("%a %d %b %Y") }}</title>
+<style>{{ css | safe }}</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Focus report</h1>
+  <p>{{ day.strftime("%A, %d %B %Y") }} · {{ "%.1f" | format(m.active_hours) }} h active</p>
+  {% if sample %}<span class="sample">Synthetic sample data</span>{% endif %}
+</header>
+
+<section class="summary">
+  <h2>Summary</h2>
+  <ul>
+  {% for line in insights %}<li>{{ line }}</li>{% endfor %}
+  </ul>
+</section>
+
+{% if m.stints %}
+<div class="tiles">
+  <div class="tile"><b>{{ "%.1f" | format(m.switches_per_hour) }}</b><span>task switches / hour</span></div>
+  <div class="tile"><b>{{ "%.1f" | format(m.micro_per_hour) }}</b><span>micro-interruptions / hour</span></div>
+  <div class="tile"><b>{{ "%.0f" | format(m.median_block_minutes) }} min</b><span>median focus block</span></div>
+  <div class="tile"><b>{{ m.long_blocks | length }}</b><span>blocks over {{ "%.0f" | format(m.settings.long_block_minutes) }} min</span></div>
+  <div class="tile"><b>{{ fmt_minutes(m.clean_focus[1].duration) if m.clean_focus else "–" }}</b><span>longest clean focus</span></div>
+  <div class="tile"><b>{{ "%.0f%%" | format(100 * m.return_rate) if m.return_rate is not none else "–" }}</b><span>returned within {{ "%.0f" | format(m.settings.return_window_minutes) }} min</span></div>
+</div>
+
+<section>
+  <h2>Your day</h2>
+  <p class="sub">Each row is one hour. Colour shows the kind of thread; black ticks mark micro-interruptions.</p>
+  <div class="legend">{{ group_legend }}</div>
+  {% for row in rows %}
+  <div class="tl-row">
+    <span>{{ "%02d" | format(row.hour) }}</span>
+    <div class="tl-track">
+      {% for s in row.segments %}<i class="tl-seg {{ s.css }}" style="left:{{ "%.2f" | format(s.left) }}%;width:{{ "%.2f" | format(s.width) }}%" title="{{ s.tip }}"></i>{% endfor %}
+      {% for pos, tip in row.ticks %}<i class="tl-tick" style="left:{{ "%.2f" | format(pos) }}%" title="{{ tip }}"></i>{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  <div class="tl-axis"><span></span><div><span>:00</span><span>:15</span><span>:30</span><span>:45</span><span>:60</span></div></div>
+</section>
+
+<section>
+  <h2>Task switches by hour</h2>
+  <p class="sub">{{ m.switches | length }} switches: {{ m.switch_kinds.get("work_work", 0) }} work → work, {{ m.switch_kinds.get("work_drift", 0) }} work → drift, {{ m.switch_kinds.get("drift_work", 0) }} drift → work.</p>
+  <div class="legend">{{ switch_legend }}</div>
+  {{ switch_chart }}
+</section>
+
+<section>
+  <h2>Focus blocks</h2>
+  <p class="sub">{{ m.focus_blocks | length }} blocks on work threads. Short detours (under {{ "%.0f" | format(m.settings.micro_interruption_seconds) }}s) that came back are counted as micro-interruptions instead of breaking the block.</p>
+  <ol class="blocks">
+  {% for b in blocks %}
+    <li>
+      <div class="bar-label"><span><i class="sw {{ b.css }}"></i> {{ b.minutes }} on {{ b.thread }}</span><span>{{ b.span }}</span></div>
+      <div class="meta">{% if b.micro %}{{ b.micro }} micro-interruption{{ "s" if b.micro != 1 }} ({{ b.sources }}){% else %}No micro-interruptions{% endif %} · longest clean stretch {{ b.clean }}</div>
+      <div class="bar-track"><div class="bar-fill {{ b.css }}" style="width:{{ "%.1f" | format(b.pct) }}%"></div></div>
+    </li>
+  {% endfor %}
+  </ol>
+</section>
+
+<section>
+  <h2>Micro-interruptions</h2>
+  <p class="sub">{{ m.micro_count }} in total, {{ fmt_minutes(m.micro_seconds) }} spent in them, {{ "%.1f" | format(m.micro_per_focus_block) }} per focus block on average.</p>
+  <div class="cols-2">
+    <div>
+      <h3 class="sub">What pulled you away</h3>
+      <div class="bars">
+      {% for b in micro_sources %}
+        <div><div class="bar-label"><span>{{ b.label }}</span><span>{{ b.text }}</span></div>
+        <div class="bar-track"><div class="bar-fill {{ b.css }}" style="width:{{ "%.1f" | format(b.pct) }}%"></div></div></div>
+      {% endfor %}
+      </div>
+    </div>
+    <div>
+      <h3 class="sub">By hour</h3>
+      {{ micro_chart }}
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Where switches go</h2>
+  <div class="cols-2">
+    <div>
+      <h3 class="sub">Most common switches</h3>
+      <ol class="pairs">
+      {% for (src, dst), n in pairs %}<li>{{ src }} → {{ dst }}: <span class="num">{{ n }}</span>×</li>{% endfor %}
+      </ol>
+    </div>
+    <div>
+      <h3 class="sub">Coming back</h3>
+      {% if m.return_rate is not none %}
+      <p>You left a task {{ m.returns_left }} times and came back within {{ "%.0f" | format(m.settings.return_window_minutes) }} min {{ m.returns_back }} times ({{ "%.0f%%" | format(100 * m.return_rate) }}){% if m.median_return_minutes is not none %}; median time to return {{ "%.0f" | format(m.median_return_minutes) }} min{% endif %}.</p>
+      {% endif %}
+      {% if m.abandoned %}
+      <p class="sub">Left and not resumed today:</p>
+      <ul>{% for a in m.abandoned %}<li>{{ a.thread }} (left {{ a.left_at.strftime("%H:%M") }}, {{ fmt_minutes(a.total_seconds) }} total)</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Time per thread</h2>
+  <p class="sub">Comms tied to a task: {{ fmt_minutes(m.task_comms_seconds) }} · general comms: {{ fmt_minutes(m.general_comms_seconds) }}</p>
+  <div class="legend">{{ group_legend }}</div>
+  <div class="bars">
+  {% for b in threads %}
+    <div><div class="bar-label"><span>{{ b.label }}</span><span>{{ b.text }}</span></div>
+    <div class="bar-track"><div class="bar-fill {{ b.css }}" style="width:{{ "%.1f" | format(b.pct) }}%"></div></div></div>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<footer>
+  Generated by focus-tracker. Flicker under {{ "%.0f" | format(m.settings.flicker_seconds) }}s ignored; detours up to {{ "%.0f" | format(m.settings.micro_interruption_seconds) }}s count as micro-interruptions; focus blocks are work blocks of {{ "%.0f" | format(m.settings.min_block_seconds / 60) }}+ min.
+  {% if unclassified_share > 0.02 %}{{ "%.0f%%" | format(100 * unclassified_share) }} of active time is unclassified — run <code>focustracker unclassified</code> to turn titles into rules.{% endif %}
+  {% if llm_error %}LLM classification was skipped: {{ llm_error }}{% endif %}
+</footer>
+</main>
+</body>
+</html>
