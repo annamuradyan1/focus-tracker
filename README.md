@@ -98,6 +98,10 @@ every field. Run `unclassified` after a few days and turn the top titles into ru
 
 ### Telegram delivery
 
+Each morning the bot sends the summary as a message with the full HTML report attached:
+
+<p align="center"><img src="docs/telegram-message.png" width="420" alt="Telegram message from the bot: five summary bullets about switches, the longest focus block, clean focus, micro-interruptions and returns, followed by the attached daily-2026-11-10.html report"></p>
+
 1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and pick a
    name and a username ending in `bot`. BotFather replies with a token.
 2. Open a chat with your new bot and send it any message (bots can't message you first).
