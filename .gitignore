@@ -1,0 +1,53 @@
+# --- Personal data: never commit ---------------------------------------------
+# The app keeps real config, caches and reports outside the repo
+# (~/.config/focus-tracker, ~/.local/share/focus-tracker). These patterns are a
+# second line of defence in case anything ends up in the working tree.
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Personal thread/category rules (commit *.example.yaml instead)
+threads.yaml
+config.yaml
+config/*.yaml
+!config/*.example.yaml
+
+# Raw ActivityWatch exports and local data
+exports/
+data/
+*.aw.json
+aw-export*.json
+
+# Generated reports and send state
+reports/
+state.json
+
+# Classification caches
+.cache/
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs
+*.log
+logs/
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- OS / editors -------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/

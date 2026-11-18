@@ -1,0 +1,33 @@
+[project]
+name = "focus-tracker"
+version = "0.1.0"
+description = "Measure context switching between tasks (not apps) from ActivityWatch data."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Anna Muradyan" }]
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "jinja2>=3.1",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Only needed for LLM classification of unmatched titles. Rules-only mode works without it.
+llm = ["anthropic>=0.40"]
+
+[project.scripts]
+focustracker = "focustracker.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/focustracker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
