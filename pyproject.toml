@@ -14,7 +14,9 @@ dependencies = [
 
 [project.optional-dependencies]
 # Only needed for LLM classification of unmatched titles. Rules-only mode works without it.
-llm = ["anthropic>=0.40"]
+llm = [
+    "anthropic>=0.40",
+]
 
 [project.scripts]
 focustracker = "focustracker.cli:main"

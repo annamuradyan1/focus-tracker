@@ -1,0 +1,166 @@
+# focus-tracker thread rules.
+#
+# `focustracker init` copies this file to ~/.config/focus-tracker/threads.yaml.
+# Edit that copy, not this one: your real rules will contain personal details
+# (companies, project names) and must never be committed.
+#
+# A *thread* is what you were actually working on, regardless of app.
+# Thread names look like "<Area>: <task>"; the group decides how the thread
+# counts in switch statistics (see `groups`).
+
+settings:
+  # Stints shorter than this are window flicker (alt-tab pass-through) and are dropped.
+  flicker_seconds: 3
+  # A detour up to this long that returns to the same thread is a micro-interruption:
+  # counted and reported, but it doesn't end the focus block.
+  micro_interruption_seconds: 30
+  # Blocks shorter than this don't count as focus blocks (they still count as switches).
+  min_block_seconds: 60
+  long_block_minutes: 25
+  return_window_minutes: 30
+  # timezone: Asia/Yerevan        # defaults to the system timezone
+  llm:
+    # Send titles that no rule matches to the Claude API (needs ANTHROPIC_API_KEY).
+    # Set to false for rules-only mode: nothing leaves your machine.
+    enabled: true
+    model: claude-haiku-5-5
+
+# How each group counts: work, drift or neutral (neutral is left out of the
+# work/drift switch split).
+groups:
+  job_search: work
+  side_project: work
+  learning: work
+  comms: work
+  admin: work
+  drift: drift
+  unknown: neutral
+
+browsers: [Google Chrome, Arc, Safari, Firefox, Brave Browser, Microsoft Edge]
+
+# Communication tools. Time in one of these that a rule or company match puts
+# on a task thread (e.g. a Gmail thread with a recruiter) counts as *task comms*;
+# everything else lands on the general "Comms" thread.
+comms:
+  apps: &comms_apps [Mail, Slack, Telegram, WhatsApp, Messages, Discord, zoom.us, FaceTime, Microsoft Teams]
+  domains: &comms_domains
+    - mail.google.com
+    - web.telegram.org
+    - web.whatsapp.com
+    - app.slack.com
+    - meet.google.com
+    - outlook.live.com
+    - outlook.office.com
+    - discord.com
+
+# Friendly names for apps and sites in reports.
+labels:
+  mail.google.com: Gmail
+  docs.google.com: Google Docs
+  drive.google.com: Google Drive
+  calendar.google.com: Google Calendar
+  meet.google.com: Google Meet
+  web.telegram.org: Telegram
+  web.whatsapp.com: WhatsApp
+  app.slack.com: Slack
+  linkedin.com: LinkedIn
+  youtube.com: YouTube
+  notion.so: Notion
+  claude.ai: Claude
+  chatgpt.com: ChatGPT
+  github.com: GitHub
+  figma.com: Figma
+  Code: VS Code
+  zoom.us: Zoom
+
+# Companies you're applying to. Any title or URL that mentions one is put on
+# "Job search: <Company>" before any other rule runs, even inside Gmail or
+# Telegram (that time is reported as task comms).
+companies:
+  - Northwind Labs
+  - name: Bluefin Analytics
+    aliases: [bluefin.io]
+
+# Rules are checked top to bottom; the first match wins. A rule matches when
+# ALL the fields it lists match. Each field takes a string or a list (any of):
+#   app:    app name, case-insensitive exact match
+#   domain: site domain; also matches subdomains
+#   title:  regular expression on the window/tab title (case-insensitive)
+#   url:    regular expression on the URL (case-insensitive)
+# A thread name can use named groups from the title/url regexes, e.g. {company}.
+rules:
+  # --- Job search -------------------------------------------------------------
+  - thread: "Job search: {company}"
+    group: job_search
+    url:
+      - '(?:boards|job-boards)\.greenhouse\.io/(?P<company>[^/?#]+)'
+      - 'jobs\.lever\.co/(?P<company>[^/?#]+)'
+      - 'jobs\.ashbyhq\.com/(?P<company>[^/?#]+)'
+      - 'apply\.workable\.com/(?P<company>[^/?#]+)'
+      - '//(?P<company>[^./]+)\.(?:teamtailor|recruitee|bamboohr)\.com'
+  - thread: "Job search: CV & cover letters"
+    group: job_search
+    title: '\b(cv|resume|résumé|cover letter|portfolio)\b'
+  - thread: "Job search: job boards"
+    group: job_search
+    domain: [indeed.com, wellfound.com, glassdoor.com, welcometothejungle.com, remoteok.com, weworkremotely.com]
+  - thread: "Job search: job boards"
+    group: job_search
+    domain: linkedin.com
+    url: 'linkedin\.com/jobs'
+  - thread: "Job search: LinkedIn"
+    group: job_search
+    domain: linkedin.com
+
+  # --- Side project -------------------------------------------------------------
+  - thread: "Side project: party game"
+    group: side_project
+    title: 'party[ -]?game'
+
+  # --- Learning -----------------------------------------------------------------
+  - thread: "Learning: courses"
+    group: learning
+    domain: [coursera.org, udemy.com, edx.org, deeplearning.ai, maven.com, skillshare.com]
+  - thread: "Learning: videos"
+    group: learning
+    domain: youtube.com
+    title: '\b(tutorial|course|lecture|talk|conference|how to|explained)\b'
+  - thread: "Learning: AI tools"
+    group: learning
+    app: [Claude, ChatGPT]
+  - thread: "Learning: AI tools"
+    group: learning
+    domain: [claude.ai, chatgpt.com, gemini.google.com, perplexity.ai]
+  - thread: "Learning: articles"
+    group: learning
+    domain: [medium.com, substack.com, dev.to, lennysnewsletter.com]
+
+  # --- Comms (not tied to a specific task) --------------------------------------
+  - thread: Comms
+    group: comms
+    app: *comms_apps
+  - thread: Comms
+    group: comms
+    domain: *comms_domains
+
+  # --- Admin ----------------------------------------------------------------------
+  - thread: Admin
+    group: admin
+    app: [Calendar, Finder, System Settings, 1Password, Preview]
+  - thread: Admin
+    group: admin
+    domain: [calendar.google.com, drive.google.com]
+
+  # --- Drift ----------------------------------------------------------------------
+  - thread: "Drift: social"
+    group: drift
+    domain: [instagram.com, facebook.com, x.com, twitter.com, reddit.com, tiktok.com, threads.net]
+  - thread: "Drift: video"
+    group: drift
+    domain: [youtube.com, netflix.com, twitch.tv]
+  - thread: "Drift: news"
+    group: drift
+    domain: [news.ycombinator.com, bbc.com, cnn.com, nytimes.com, theguardian.com]
+  - thread: "Drift: shopping"
+    group: drift
+    domain: [amazon.com, ebay.com, aliexpress.com, etsy.com]
